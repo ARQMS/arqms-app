@@ -1,0 +1,19 @@
+# To generate the models in this application a package is used for:
+#   https://pub.dev/packages/model_generator
+#
+# To generate classes according to following configuration run:
+#   `flutter packages run model_generator`
+#
+# NOTE: The current version throws an error "The system cannot find the file specified".
+# after the previous command the following command must be run manually:
+#   `flutter packages pub run build_runner build --delete-conflicting-outputs`
+
+User:
+  type: object
+  path: auth/
+  description: Represents the user model
+  properties:
+    email:
+      description: The associated email address
+      required: true
+      type: string

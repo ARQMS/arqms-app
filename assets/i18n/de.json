@@ -1,0 +1,13 @@
+{
+  "title": "Air Room Management",
+
+  "auth.password": "Passwort",
+  "auth.password.hint": "Gib dein Passwort ein",
+  "auth.password.forget": "Passwort vergessen? Zurücksetzen",
+  "auth.password.error": "Bitte Passwort eingeben",
+  "auth.email": "E-Mail",
+  "auth.email.hint": "Gib deine E-Mail ein",
+  "auth.email.error": "Bitte geben Sie eine gültige E-Mail ein",
+  "auth.signIn": "Anmelden",
+  "auth.signIn.google": "Mit Google Konto anmelden"
+}
