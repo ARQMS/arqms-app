@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 /// A list of all possible routes in club management app.
 enum Routes {
+  home,
   roomDetail,
   deviceConfig,
   deviceSetup,
@@ -19,6 +20,7 @@ enum Routes {
 class Paths {
   // the default routing string if any error occurs
   static const String splash = '/';
+  static const String home = splash;
 
   static const String roomDetail = '/room-detail';
   static const String deviceConfig = '/device-config';
@@ -26,6 +28,7 @@ class Paths {
 
   // a map for routing
   static const Map<Routes, String> _pathMap = {
+    Routes.home: Paths.home,
     Routes.roomDetail: Paths.roomDetail,
     Routes.deviceConfig: Paths.deviceConfig,
     Routes.deviceSetup: Paths.deviceSetup,
@@ -57,11 +60,10 @@ class AppNavigator {
 
   /// initializes transition for routing
   static Route? onGenerateRoute(RouteSettings settings) {
-    var arguments = settings.arguments as Map<String, dynamic>?;
-    var maintain = true;
     Widget? page;
 
     switch (settings.name) {
+      case Paths.home:
       case Paths.splash:
         page = const HomePage();
         break;
@@ -70,20 +72,18 @@ class AppNavigator {
         page = const HomePage();
         break;
 
-      case Paths.deviceConfig:
-      case Paths.deviceSetup:
-    }
-
-    if (page == null) {
-      if (!kDebugMode) {
-        return _pageRoute(const HomePage());
-      } else {
-        return MaterialPageRoute(
+      default:
+        if (kDebugMode) {
+          return MaterialPageRoute(
             builder: (_) =>
                 Text("Not '" + settings.name.toString() + "' implemented yet"),
-            settings: settings);
-      }
+            settings: settings,
+          );
+        }
+        page = const HomePage();
+        break;
     }
+
     return _pageRoute(page);
   }
 

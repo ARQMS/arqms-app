@@ -1,5 +1,5 @@
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis_auth/googleapis_auth.dart';
 
 /// This is a data source for connection to google services.
 ///
@@ -7,11 +7,13 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 /// https://stackoverflow.com/a/56216730+
 /// https://pub.dev/packages/google_sign_in_web
 abstract class GoogleDataSource {
-  /// Sign in process
-  Future<GoogleSignInAccount?> signIn({bool disconnect = false});
+  /// Sign in process with extern google sign in process
+  /// [force] will disconnect the account and enforce a new sign in otherwise
+  /// a still existing cached account could be taken without any user input
+  Future<GoogleSignInAccount?> signIn({bool force = false});
 
   /// Sign out current user
-  Future<void> signOut();
+  Future<bool> signOut();
 }
 
 class GoogleDataSourceImpl extends GoogleDataSource {
@@ -19,20 +21,28 @@ class GoogleDataSourceImpl extends GoogleDataSource {
   /// https://developers.google.com/calendar/api/guides/auth
   static const _scopes = <String>[];
 
-  final GoogleSignIn googleService = GoogleSignIn.standard(scopes: _scopes);
-
-  AuthClient? _client;
+  final GoogleSignIn _googleService = GoogleSignIn.standard(scopes: _scopes);
 
   @override
-  Future<GoogleSignInAccount?> signIn({bool disconnect = false}) async {
-    if (disconnect) {
-      await googleService.disconnect();
+  Future<GoogleSignInAccount?> signIn({bool force = false}) async {
+    if (force) {
+      await _googleService.disconnect();
     }
-    return await googleService.signIn();
+    try {
+      return await _googleService.signIn();
+    } on PlatformException catch (e) {
+      // nothing to do
+    }
   }
 
   @override
-  Future<void> signOut() async {
-    await googleService.signOut();
+  Future<bool> signOut() async {
+    final isSignedIn = await _googleService.isSignedIn();
+    if (isSignedIn) {
+      await _googleService.disconnect();
+      await _googleService.signOut();
+    }
+
+    return true;
   }
 }

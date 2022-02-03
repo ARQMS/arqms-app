@@ -20,10 +20,10 @@ class AuthWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authStateChanges = ref.watch(authStateChangesProvider);
+    final authStateChanges = ref.watch(userChangedProvider);
     return authStateChanges.when(
       data: (user) => _data(context, user),
-      error: (_, __) => _error(context),
+      error: (err, __) => _error(context, err),
       loading: () => _loading(context),
     );
   }
@@ -40,9 +40,9 @@ class AuthWidget extends ConsumerWidget {
     );
   }
 
-  Widget _error(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text("Something went wrong")),
+  Widget _error(BuildContext context, Object err) {
+    return Scaffold(
+      body: Center(child: Text("Something went wrong. " + err.toString())),
     );
   }
 }

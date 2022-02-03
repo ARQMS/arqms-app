@@ -1,6 +1,6 @@
+import 'package:ARQMS/app/app_instantiation.dart';
 import 'package:ARQMS/app/app_localizations.dart';
 import 'package:ARQMS/app/auth/auth_signin_viewmodel.dart';
-import 'package:ARQMS/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -8,8 +8,7 @@ import 'auth_button.dart';
 
 final _signInModelProvider = ChangeNotifierProvider<SignInViewModel>(
   (ref) => SignInViewModel(
-    parseProvider: ref.read(parseProvider),
-    googleProvider: ref.read(googleProvider),
+    authService: ref.read(authService),
   ),
 );
 
@@ -127,6 +126,14 @@ class AuthSignInState extends ConsumerState<SignInPage> {
             textId: "auth.signIn",
             onTab: () => viewModel.signIn(_formKey),
           ),
+          if (viewModel.lastError != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                viewModel.lastError!,
+                style: const TextStyle(fontSize: 12, color: Colors.red),
+              ),
+            ),
           const Divider(height: 50),
           AuthProviderButton(
             textId: "auth.signIn.google",

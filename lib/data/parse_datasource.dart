@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ARQMS/data/exception_datasource.dart';
 import 'package:ARQMS/models/auth/user.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,28 +10,21 @@ import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 abstract class ParseDataSource {
   /// sign in with given username and password, returns the user model or throw
   /// an [ApiFailure]
-  Future signIn(
+  Future<User?> signIn(
     final String email,
     final String password,
   );
 
   /// sign in with google account, returns the user model or throw
   /// an [ApiFailure]
-  Future signInWithGoogle(GoogleSignInAccount? credentials);
+  Future<User?> signInWithGoogle(GoogleSignInAccount? credentials);
 
   /// Sign out current user
-  Future signOut();
-
-  /// Notifies about changes to the user's sign-in state
-  Stream<User?> authStateChanges();
+  Future<bool> signOut();
 }
 
 class ParseDataSourceImpl implements ParseDataSource {
-  ParseDataSourceImpl() {
-    _init();
-  }
-
-  void _init() async {
+  void initialize() async {
     const connectionString = "http://root:root@localhost:1337/parse";
     await Parse().initialize(
       "arqms",
@@ -38,54 +32,52 @@ class ParseDataSourceImpl implements ParseDataSource {
       debug: kDebugMode,
       autoSendSessionId: true,
     );
-
-    // TODO load user data from cache or local storage
-    authState.add(null);
   }
 
   @override
-  Future signIn(String email, String password) async {
+  Future<User?> signIn(String email, String password) async {
     var user = ParseUser(email, password, email);
     var response = await user.login();
 
     if (!response.success) {
-      return authState.addError(response.error!);
+      throw DataSourceException.fromParse(response.error!);
     }
 
-    authState.add(User.fromJson(user.toJson()));
+    return User.fromJson(user.toJson());
   }
 
   @override
-  Future signInWithGoogle(GoogleSignInAccount? credentials) async {
-    final authentication = await credentials?.authentication;
+  Future<User?> signInWithGoogle(GoogleSignInAccount? credentials) async {
+    if (credentials == null) return null;
+
+    final authentication = await credentials.authentication;
     final response = await ParseUser.loginWith(
       'google',
       <String, dynamic>{
-        'access_token': authentication?.accessToken,
-        'id': credentials?.id,
-        'id_token': authentication?.idToken
+        'access_token': authentication.accessToken,
+        'id': credentials.id,
+        'id_token': authentication.idToken
       },
-      username: credentials?.email,
-      email: credentials?.email,
+      username: credentials.email,
+      email: credentials.email,
     );
 
     if (!response.success) {
-      return authState.addError(response.error!);
+      throw DataSourceException.fromParse(response.error!);
     }
 
     var user = await ParseUser.currentUser() as ParseUser;
-    authState.add(User.fromJson(user.toJson()));
+    return User.fromJson(user.toJson());
   }
 
   @override
-  Future signOut() async {
-    authState.add(null);
-  }
+  Future<bool> signOut() async {
+    var user = await ParseUser.currentUser() as ParseUser;
+    var response = await user.logout();
 
-  @override
-  Stream<User?> authStateChanges() {
-    return authState.stream;
+    if (!response.success) {
+      throw DataSourceException.fromParse(response.error!);
+    }
+    return true;
   }
-
-  final StreamController<User?> authState = StreamController();
 }

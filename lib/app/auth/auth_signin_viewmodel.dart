@@ -1,15 +1,20 @@
-import 'package:ARQMS/data/google_datasource.dart';
-import 'package:ARQMS/data/parse_datasource.dart';
+import 'dart:async';
+
+import 'package:ARQMS/data/exception_datasource.dart';
+import 'package:ARQMS/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class SignInViewModel with ChangeNotifier {
-  final ParseDataSource parseProvider;
-  final GoogleDataSource googleProvider;
+  final AuthService _authService;
 
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
+  bool isLoading = false;
+  String? lastError = null;
 
-  SignInViewModel({required this.parseProvider, required this.googleProvider});
+  /// Constructor
+  SignInViewModel({required AuthService authService})
+      : _authService = authService;
 
   Future signIn(GlobalKey<FormState> formKey) async {
     var valid = formKey.currentState!.validate();
@@ -18,9 +23,26 @@ class SignInViewModel with ChangeNotifier {
     formKey.currentState!.save();
 
     _setLoading(true);
+    try {
+      await _authService.signIn(username.text, password.text);
+    } on DataSourceException catch (e) {
+      lastError = e.message;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void forgetPassword() {
+    // TODO
+  }
+
+  Future signInGoogle() async {
+    _setLoading(true);
 
     try {
-      await parseProvider.signIn(username.text, password.text);
+      await _authService.signInWithGoogle();
+    } on DataSourceException catch (e) {
+      lastError = e.message;
     } finally {
       _setLoading(false);
     }
@@ -30,19 +52,4 @@ class SignInViewModel with ChangeNotifier {
     isLoading = val;
     notifyListeners();
   }
-
-  void forgetPassword() {}
-
-  Future signInGoogle() async {
-    _setLoading(true);
-
-    try {
-      var credentials = await googleProvider.signIn();
-      await parseProvider.signInWithGoogle(credentials);
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  bool isLoading = false;
 }
