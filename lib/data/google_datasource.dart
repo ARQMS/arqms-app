@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// This is a data source for connection to google services.
@@ -12,6 +11,9 @@ abstract class GoogleDataSource {
   /// a still existing cached account could be taken without any user input
   Future<GoogleSignInAccount?> signIn({bool force = false});
 
+  /// Try to sign in silent
+  Future<GoogleSignInAccount?> signInSilent();
+
   /// Sign out current user
   Future<bool> signOut();
 }
@@ -24,15 +26,16 @@ class GoogleDataSourceImpl extends GoogleDataSource {
   final GoogleSignIn _googleService = GoogleSignIn.standard(scopes: _scopes);
 
   @override
+  Future<GoogleSignInAccount?> signInSilent() async {
+    return await _googleService.signInSilently();
+  }
+
+  @override
   Future<GoogleSignInAccount?> signIn({bool force = false}) async {
     if (force) {
       await _googleService.disconnect();
     }
-    try {
-      return await _googleService.signIn();
-    } on PlatformException catch (e) {
-      // nothing to do
-    }
+    return await _googleService.signIn();
   }
 
   @override

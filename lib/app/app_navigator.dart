@@ -1,7 +1,7 @@
 import 'package:ARQMS/app/auth/auth_signin_page.dart';
-import 'package:ARQMS/app/auth/auth_widget.dart';
 import 'package:ARQMS/app/home/home_page.dart';
 import 'package:ARQMS/styles/route_animations.dart';
+import 'package:ARQMS/widgets/auth_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

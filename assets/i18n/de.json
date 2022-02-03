@@ -1,6 +1,9 @@
 {
   "title": "Air Room Management",
 
+  "error.unknown": "Irgendetwas ist schief gelaufen",
+  "error.noItems": "Elemente können nicht geladen werden",
+
   "auth.password": "Passwort",
   "auth.password.hint": "Gib dein Passwort ein",
   "auth.password.forget": "Passwort vergessen? Zurücksetzen",
@@ -9,5 +12,11 @@
   "auth.email.hint": "Gib deine E-Mail ein",
   "auth.email.error": "Bitte geben Sie eine gültige E-Mail ein",
   "auth.signIn": "Anmelden",
-  "auth.signIn.google": "Mit Google Konto anmelden"
+  "auth.signIn.google": "Mit Google Konto anmelden",
+
+  "drawer.rooms": "Räume",
+  "drawer.signOut": "Abmelden",
+
+  "widgets.emptyContent.title": "Keine Elemente",
+  "widgets.emptyContent.message": "Füge ein neues Element hinzu"
 }

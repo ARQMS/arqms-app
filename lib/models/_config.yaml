@@ -17,3 +17,44 @@ User:
       description: The associated email address
       required: true
       type: string
+    name:
+      description: The associated Name
+      type: string
+    firstname:
+      description: The associated Firstname
+      type: string
+
+RoomState:
+  path: room/
+  type: enum
+  generate_map: true
+  properties:
+    GOOD:
+    POOR:
+    MODERATE:
+
+Room:
+  type: object
+  path: room/
+  description: Represents a single room. Each room corresponding to one device
+  properties:
+    objectId:
+      description: A unique id for database
+      required: true
+      type: string
+    name:
+      description: The room display name
+      required: true
+      type: string
+    state:
+      description: The room quality state
+      type: RoomState
+    temperature:
+      description: The current room temperature [C]
+      type: double
+    relativeHumidity:
+      description: The current room humidity in [%]
+      type: double
+    co2:
+      description: The current room co2 in [%]
+      type: double

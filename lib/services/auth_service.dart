@@ -45,8 +45,10 @@ class AuthServiceImpl extends AuthService {
         _parseSource = parseSource;
 
   Future initialize() async {
-    // TODO load user data from cache or local storage
-    _authState.add(null);
+    var credentials = await _googleSource.signInSilent();
+    var user = await _parseSource.signInSilent(credentials);
+
+    _authState.add(user);
   }
 
   @override

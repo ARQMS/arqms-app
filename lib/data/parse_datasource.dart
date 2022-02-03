@@ -19,6 +19,10 @@ abstract class ParseDataSource {
   /// an [ApiFailure]
   Future<User?> signInWithGoogle(GoogleSignInAccount? credentials);
 
+  /// try to sign in silent. If a user is cached, reuse them. Use the
+  /// [credentials] for google account, when null try parse cache
+  Future<User?> signInSilent([GoogleSignInAccount? credentials]);
+
   /// Sign out current user
   Future<bool> signOut();
 }
@@ -31,6 +35,7 @@ class ParseDataSourceImpl implements ParseDataSource {
       connectionString,
       debug: kDebugMode,
       autoSendSessionId: true,
+      liveQueryUrl: "ws://localhost:1337/parse",
     );
   }
 
@@ -66,8 +71,22 @@ class ParseDataSourceImpl implements ParseDataSource {
       throw DataSourceException.fromParse(response.error!);
     }
 
-    var user = await ParseUser.currentUser() as ParseUser;
+    var user = response.result as ParseUser?;
+    if (user == null) return null;
+
     return User.fromJson(user.toJson());
+  }
+
+  @override
+  Future<User?> signInSilent([GoogleSignInAccount? credentials]) async {
+    if (credentials == null) {
+      var user = await ParseUser.currentUser() as ParseUser?;
+      if (user == null) return null;
+
+      return User.fromJson(user.toJson());
+    }
+
+    return signInWithGoogle(credentials);
   }
 
   @override
