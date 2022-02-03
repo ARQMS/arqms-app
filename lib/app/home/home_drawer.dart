@@ -38,14 +38,11 @@ class _HomeDrawerState extends ConsumerState<HomeDrawer> {
     final userProvider = ref.watch(userChangedProvider);
     final user = userProvider.value!;
 
-    String name = (user.firstname != null || user.name != null)
-        ? "${user.firstname} ${user.name}"
-        : "";
     return UserAccountsDrawerHeader(
-      accountName: Text(name),
-      accountEmail: Text(user.email),
+      accountName: Text(user.fullname),
+      accountEmail: Text(user.emailAddress!),
       currentAccountPicture: CircleAvatar(
-        child: SvgPicture.string(Jdenticon.toSvg(user.email)),
+        child: SvgPicture.string(Jdenticon.toSvg(user.emailAddress!)),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:ARQMS/app/auth/auth_signin_page.dart';
 import 'package:ARQMS/app/home/home_page.dart';
+import 'package:ARQMS/app/home/room/room_page.dart';
 import 'package:ARQMS/styles/route_animations.dart';
 import 'package:ARQMS/widgets/auth_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -65,12 +66,10 @@ class AppNavigator {
     switch (settings.name) {
       case Paths.home:
       case Paths.splash:
-        page = const HomePage();
+        page = const RoomPage();
         break;
 
       case Paths.roomDetail:
-        page = const HomePage();
-        break;
 
       default:
         if (kDebugMode) {

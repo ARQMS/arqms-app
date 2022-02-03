@@ -17,6 +17,12 @@
   "drawer.rooms": "Räume",
   "drawer.signOut": "Abmelden",
 
+  "room.title": "Übersicht",
+  "room.failure": "Unbekannter Fehler",
+  "room.sensor.temp.title": "Temperatur",
+  "room.sensor.co2.title": "CO2",
+  "room.sensor.humidity.title": "Rel. Luftfeuchtigkeit",
+
   "widgets.emptyContent.title": "Keine Elemente",
   "widgets.emptyContent.message": "Füge ein neues Element hinzu"
 }

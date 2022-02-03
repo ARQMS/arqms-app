@@ -1,51 +1,26 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'user.g.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 
 ///Represents the user model
-@JsonSerializable(explicitToJson: true)
-class User {
-  ///The associated email address
-  @JsonKey(name: 'email', required: true, includeIfNull: false)
-  final String email;
-  ///The associated Name
-  @JsonKey(name: 'name', includeIfNull: false)
-  final String? name;
-  ///The associated Firstname
-  @JsonKey(name: 'firstname', includeIfNull: false)
-  final String? firstname;
+class User extends ParseUser implements ParseCloneable {
+  String? name;
 
-  const User({
-    required this.email,
-    this.name,
-    this.firstname,
-  });
+  User(String? username, String? password, String? email)
+      : super(username, password, email);
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  User.clone(Map<String, dynamic> map)
+      : super(map[keyVarUsername], map[keyVarPassword], map[keyVarEmail]);
 
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  static const String keyFirstname = "firstname";
+  static const String keyLastname = "lastname";
+
+  String? get firstname => get<String>(keyFirstname);
+  set firstname(String? name) => set<String?>(keyFirstname, name);
+
+  String? get lastname => get<String>(keyLastname);
+  set lastname(String? name) => set<String?>(keyLastname, name);
+
+  String get fullname => "${firstname ?? ""} ${lastname ?? ""}";
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is User &&
-          runtimeType == other.runtimeType &&
-          email == other.email &&
-          name == other.name &&
-          firstname == other.firstname;
-
-  @override
-  int get hashCode =>
-      email.hashCode ^
-      name.hashCode ^
-      firstname.hashCode;
-
-  @override
-  String toString() =>
-      'User{'
-      'email: $email, '
-      'name: $name, '
-      'firstname: $firstname'
-      '}';
-
+  clone(Map<String, dynamic> map) => User.clone(map)..fromJson(map);
 }

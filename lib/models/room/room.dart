@@ -1,73 +1,33 @@
 import 'package:ARQMS/models/room/room_state.dart';
-import 'package:json_annotation/json_annotation.dart';
-
-part 'room.g.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
 
 ///Represents a single room. Each room corresponding to one device
-@JsonSerializable(explicitToJson: true)
-class Room {
-  ///A unique id for database
-  @JsonKey(name: 'objectId', required: true, includeIfNull: false)
-  final String objectId;
-  ///The room display name
-  @JsonKey(name: 'name', required: true, includeIfNull: false)
-  final String name;
-  ///The room quality state
-  @JsonKey(name: 'state', includeIfNull: false)
-  final RoomState? state;
-  ///The current room temperature [C]
-  @JsonKey(name: 'temperature', includeIfNull: false)
-  final double? temperature;
-  ///The current room humidity in [%]
-  @JsonKey(name: 'relativeHumidity', includeIfNull: false)
-  final double? relativeHumidity;
-  ///The current room co2 in [%]
-  @JsonKey(name: 'co2', includeIfNull: false)
-  final double? co2;
-
-  const Room({
-    required this.objectId,
-    required this.name,
-    this.state,
-    this.temperature,
-    this.relativeHumidity,
-    this.co2,
-  });
-
-  factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
-
-  Map<String, dynamic> toJson() => _$RoomToJson(this);
+class Room extends ParseObject implements ParseCloneable {
+  Room() : super(tabelleName);
+  Room.clone() : this();
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Room &&
-          runtimeType == other.runtimeType &&
-          objectId == other.objectId &&
-          name == other.name &&
-          state == other.state &&
-          temperature == other.temperature &&
-          relativeHumidity == other.relativeHumidity &&
-          co2 == other.co2;
+  clone(Map<String, dynamic> map) => Room.clone()..fromJson(map);
 
-  @override
-  int get hashCode =>
-      objectId.hashCode ^
-      name.hashCode ^
-      state.hashCode ^
-      temperature.hashCode ^
-      relativeHumidity.hashCode ^
-      co2.hashCode;
+  static const String tabelleName = "Room";
+  static const String keyName = "name";
+  static const String keyState = "state";
+  static const String keyTemperature = "temperature";
+  static const String keyRelativeHumidity = "relativeHumidity";
+  static const String keyCo2 = "co2";
 
-  @override
-  String toString() =>
-      'Room{'
-      'objectId: $objectId, '
-      'name: $name, '
-      'state: $state, '
-      'temperature: $temperature, '
-      'relativeHumidity: $relativeHumidity, '
-      'co2: $co2'
-      '}';
+  String? get name => get<String>(keyName);
+  set name(String? val) => set<String?>(keyName, val);
 
+  RoomState? get state => get<String>(keyState)?.asRoomState;
+  set state(RoomState? val) => set<String?>(keyState, val?.stringValue);
+
+  double? get temperature => get<double>(keyTemperature);
+  set temperature(double? val) => set<double?>(keyTemperature, val);
+
+  double? get relativeHumidity => get<double>(keyRelativeHumidity);
+  set relativeHumidity(double? val) => set<double?>(keyRelativeHumidity, val);
+
+  double? get co2 => get<double>(keyCo2);
+  set co2(double? val) => set<double?>(keyCo2, val);
 }

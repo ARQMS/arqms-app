@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// This is a data source for connection to google services.
@@ -35,7 +36,15 @@ class GoogleDataSourceImpl extends GoogleDataSource {
     if (force) {
       await _googleService.disconnect();
     }
-    return await _googleService.signIn();
+    try {
+      return await _googleService.signIn();
+    } on PlatformException catch (e) {
+      if (e.code == "popup_closed_by_user") {
+        // nothing to do
+        return null;
+      }
+      rethrow;
+    }
   }
 
   @override

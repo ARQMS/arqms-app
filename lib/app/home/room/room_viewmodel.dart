@@ -9,9 +9,11 @@ class RoomViewModel with ChangeNotifier {
   RoomViewModel({required RoomService roomService})
       : _roomService = roomService;
 
-  QueryBuilder<ParseObject> get getRoomsQuery => _roomService.getRoomsQuery;
+  QueryBuilder<Room> get getRoomsQuery => _roomService.getRoomsQuery;
 
   Future delete(Room room) async {}
 
   void gotoDetails(Room room) {}
+
+  void addRoom() {}
 }

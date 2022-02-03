@@ -16,20 +16,20 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # Code Generators
+  json_annotation: ^4.4.0
+  package_info_plus: ^1.3.0
+
   # Internalization
   intl: ^0.17.0
 
   # Ui
   hooks_riverpod: ^1.0.3
-  cupertino_icons: ^1.0.2
-  simple_animations: ^1.3.3
   jdenticon_dart: 2.0.0
   flutter_svg: ^1.0.3
 
   # Services
   mqtt5_client: ^3.1.3
-  json_annotation: ^4.4.0
-  json_serializable: ^6.1.4
   parse_server_sdk_flutter: ^3.1.0
   google_sign_in: ^5.2.3
   googleapis: ^7.0.0
@@ -41,7 +41,7 @@ dev_dependencies:
 
   # Code Generators
   build_runner: ^2.1.2
-  model_generator: ^5.8.1
+  json_serializable: ^6.1.4
 
   # The lint set provided by the package is activated in the `analysis_options.yaml`
   flutter_lints: ^1.0.0
@@ -54,9 +54,3 @@ flutter:
   assets:
     - assets/i18n/de.json
     - assets/google-logo.png
-
-model_generator:
-  config_path: lib/models/_config.yaml
-  base_directory: models
-  equals_and_hash_code: true
-  to_string: true

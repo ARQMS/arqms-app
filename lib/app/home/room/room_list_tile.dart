@@ -1,6 +1,7 @@
 import 'package:ARQMS/models/room/room.dart';
 import 'package:ARQMS/models/room/room_state.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class RoomListTile extends StatelessWidget {
   final VoidCallback? onTap;
@@ -26,65 +27,8 @@ class RoomListTile extends StatelessWidget {
           ),
           child: Column(
             children: [
-              ListTile(
-                contentPadding: const EdgeInsets.only(left: 10, bottom: 10),
-                trailing: PopupMenuButton(
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      child: Text("Delete room"),
-                      value: 1,
-                    ),
-                    const PopupMenuItem(
-                      child: Text("Configure Device"),
-                      value: 2,
-                    )
-                  ],
-                ),
-                title: Text(
-                  room.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  room.objectId,
-                  style: TextStyle(
-                    color: Colors.black.withOpacity(0.6),
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.thermostat),
-                      Text(
-                        "${room.temperature?.toStringAsFixed(1)} °C",
-                        style: TextStyle(fontSize: 26),
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.opacity),
-                      Text(
-                        "${room.relativeHumidity?.toStringAsFixed(1)} %",
-                        style: TextStyle(fontSize: 26),
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.cloud),
-                      Text(
-                        "${room.co2?.toStringAsFixed(1)} %",
-                        style: TextStyle(fontSize: 26),
-                      )
-                    ],
-                  ),
-                ],
-              ),
+              _buildTitle(context),
+              _buildValues(context),
             ],
           ),
         ),
@@ -92,7 +36,56 @@ class RoomListTile extends StatelessWidget {
     );
   }
 
-  Color _stateToColor(RoomState? state) {
+  Widget _buildTitle(BuildContext context) => ListTile(
+        contentPadding: const EdgeInsets.only(left: 10, bottom: 10),
+        title: Text(
+          room.name ?? "",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          DateFormat.yMd().add_Hm().format(room.updatedAt!),
+          style: TextStyle(
+            color: Colors.black.withOpacity(0.6),
+            fontSize: 12,
+          ),
+        ),
+      );
+
+  Widget _buildValues(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            _buildSensorValue(
+              icon: Icons.thermostat,
+              titleId: "room.sensor.temp.title",
+              value: "${room.temperature?.toStringAsFixed(1)} °C",
+            ),
+            _buildSensorValue(
+              icon: Icons.opacity,
+              titleId: "room.sensor.humidity.title",
+              value: "${room.relativeHumidity?.toStringAsFixed(1)} % rH",
+            ),
+            _buildSensorValue(
+              icon: Icons.cloud,
+              titleId: "room.sensor.co2.title",
+              value: "${room.co2?.toStringAsFixed(1)} %",
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildSensorValue(
+          {required String titleId,
+          required String value,
+          required IconData icon}) =>
+      Row(children: [
+        Icon(icon),
+        Text(value, style: const TextStyle(fontSize: 26)),
+      ]);
+
+  static Color _stateToColor(RoomState? state) {
     switch (state) {
       case RoomState.GOOD:
         return Colors.green;

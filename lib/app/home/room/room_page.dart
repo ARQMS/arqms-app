@@ -1,4 +1,6 @@
 import 'package:ARQMS/app/app_instantiation.dart';
+import 'package:ARQMS/app/app_localizations.dart';
+import 'package:ARQMS/app/home/home_drawer.dart';
 import 'package:ARQMS/app/home/room/room_list_tile.dart';
 import 'package:ARQMS/app/home/room/room_viewmodel.dart';
 import 'package:ARQMS/models/room/room.dart';
@@ -17,14 +19,28 @@ class RoomPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.read(roomModelProvider);
 
-    return ParseLiveListWidget<ParseObject>(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("room.title".i18n(context)),
+      ),
+      drawer: const HomeDrawer(),
+      body: _buildContent(viewModel),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: viewModel.addRoom,
+      ),
+    );
+  }
+
+  Widget _buildContent(RoomViewModel viewModel) {
+    return ParseLiveListWidget<Room>(
       query: viewModel.getRoomsQuery,
       lazyLoading: false,
-      childBuilder: (BuildContext context,
-          ParseLiveListElementSnapshot<ParseObject> snapshot) {
-        if (!snapshot.hasData) return Text("Failure");
+      childBuilder:
+          (BuildContext context, ParseLiveListElementSnapshot<Room> snapshot) {
+        if (!snapshot.hasData) return Text("room.failure".i18n(context));
 
-        final room = Room.fromJson(snapshot.loadedData!.toJson());
+        final room = snapshot.loadedData!;
 
         return RoomListTile(
           room: room,
@@ -32,21 +48,5 @@ class RoomPage extends ConsumerWidget {
         );
       },
     );
-
-    /* ListItemsBuilder<Room>(
-        data: roomAsyncValue,
-        itemBuilder: (context, room) => Dismissible(
-              key: Key(room.objectId),
-              background: Container(
-                color: Colors.red,
-                child: const Icon(Icons.remove),
-              ),
-              direction: DismissDirection.endToStart,
-              onDismissed: (direction) => viewModel.delete(room),
-              child: RoomListTile(
-                room: room,
-                onTap: () => viewModel.gotoDetails(room),
-              ),
-            ));*/
   }
 }
