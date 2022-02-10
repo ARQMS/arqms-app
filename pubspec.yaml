@@ -54,3 +54,4 @@ flutter:
   assets:
     - assets/i18n/de.json
     - assets/google-logo.png
+    - assets/connect_cable.gif

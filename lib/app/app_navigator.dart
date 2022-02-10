@@ -1,6 +1,7 @@
 import 'package:ARQMS/app/auth/auth_signin_page.dart';
 import 'package:ARQMS/app/home/home_page.dart';
 import 'package:ARQMS/app/home/room/room_page.dart';
+import 'package:ARQMS/app/setup/setup_page.dart';
 import 'package:ARQMS/styles/route_animations.dart';
 import 'package:ARQMS/widgets/auth_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -67,6 +68,10 @@ class AppNavigator {
       case Paths.home:
       case Paths.splash:
         page = const RoomPage();
+        break;
+
+      case Paths.deviceSetup:
+        page = SetupPage();
         break;
 
       case Paths.roomDetail:

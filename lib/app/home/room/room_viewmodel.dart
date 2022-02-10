@@ -1,3 +1,4 @@
+import 'package:ARQMS/app/app_navigator.dart';
 import 'package:ARQMS/models/room/room.dart';
 import 'package:ARQMS/services/room_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,5 +16,7 @@ class RoomViewModel with ChangeNotifier {
 
   void gotoDetails(Room room) {}
 
-  void addRoom() {}
+  void addRoom() async {
+    await AppNavigator.push(Routes.deviceSetup);
+  }
 }

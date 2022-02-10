@@ -23,6 +23,20 @@
   "room.sensor.co2.title": "CO2",
   "room.sensor.humidity.title": "Rel. Luftfeuchtigkeit",
 
+  "setup.wizard.cancel": "Abbrechen",
+  "setup.wizard.next": "Weiter",
+  "setup.wizard.finish": "Fertig",
+  "setup.wizard.step.info.title": "Informationen",
+  "setup.wizard.step.info.desc1": "Bitte lade das Gerät mit einem beliebigen 5V USB-C Adapter. Sobald das Wi-Fi Symbol blau blinkt, weiter zum nächsten Schritt",
+  "setup.wizard.step.search.title": "Suchen",
+  "setup.wizard.step.config.title": "Konfigurieren",
+  "setup.wizard.step.config.device": "Gerät",
+  "setup.wizard.step.config.devicename": "Gerätename",
+  "setup.wizard.step.config.wlan": "WLAN",
+  "setup.wizard.step.config.ssid": "SSID",
+  "setup.wizard.step.config.ssidPwd": "Passwort",
+  "setup.wizard.step.config.interval": "Sendeinterval [min]",
+
   "widgets.emptyContent.title": "Keine Elemente",
   "widgets.emptyContent.message": "Füge ein neues Element hinzu"
 }
