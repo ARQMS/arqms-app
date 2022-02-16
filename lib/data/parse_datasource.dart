@@ -30,11 +30,11 @@ abstract class ParseDataSource {
 
 class ParseDataSourceImpl implements ParseDataSource {
   void initialize() async {
-    const connectionString = "http://root:root@localhost:1337/parse";
+    const connectionString = "http://root:root@192.168.0.16:1337/parse";
     await Parse().initialize("arqms", connectionString,
         debug: kDebugMode,
         autoSendSessionId: true,
-        liveQueryUrl: "ws://localhost:1337/parse",
+        liveQueryUrl: "ws://192.168.0.16:1337/parse",
         parseUserConstructor: (username, password, emailAddress,
                 {client, debug, sessionToken}) =>
             User(username, password, emailAddress),

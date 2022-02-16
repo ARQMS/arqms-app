@@ -10,13 +10,15 @@ class SignInViewModel with ChangeNotifier {
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
   bool isLoading = false;
-  String? lastError = null;
+  String? lastError;
 
   /// Constructor
   SignInViewModel({required AuthService authService})
       : _authService = authService;
 
   Future signIn(GlobalKey<FormState> formKey) async {
+    lastError = null;
+
     var valid = formKey.currentState!.validate();
     if (!valid) return;
 
@@ -37,6 +39,8 @@ class SignInViewModel with ChangeNotifier {
   }
 
   Future signInGoogle() async {
+    lastError = null;
+
     _setLoading(true);
 
     try {

@@ -36,6 +36,7 @@ class AuthSignInState extends ConsumerState<SignInPage> {
     return Scaffold(
       body: Center(
         child: Container(
+          padding: const EdgeInsets.all(20.0),
           constraints: const BoxConstraints(maxWidth: 500),
           height: deviceSize.height,
           width: deviceSize.width,

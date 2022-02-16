@@ -22,12 +22,12 @@ class Room extends ParseObject implements ParseCloneable {
   RoomState? get state => get<String>(keyState)?.asRoomState;
   set state(RoomState? val) => set<String?>(keyState, val?.stringValue);
 
-  double? get temperature => get<double>(keyTemperature);
+  double? get temperature => get<double?>(keyTemperature);
   set temperature(double? val) => set<double?>(keyTemperature, val);
 
-  double? get relativeHumidity => get<double>(keyRelativeHumidity);
+  double? get relativeHumidity => get<double?>(keyRelativeHumidity);
   set relativeHumidity(double? val) => set<double?>(keyRelativeHumidity, val);
 
-  double? get co2 => get<double>(keyCo2);
+  double? get co2 => get<double?>(keyCo2);
   set co2(double? val) => set<double?>(keyCo2, val);
 }
