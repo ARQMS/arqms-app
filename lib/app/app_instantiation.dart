@@ -1,6 +1,7 @@
 import 'package:ARQMS/data/google_datasource.dart';
 import 'package:ARQMS/data/parse_datasource.dart';
 import 'package:ARQMS/services/auth_service.dart';
+import 'package:ARQMS/services/device_service.dart';
 import 'package:ARQMS/services/room_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -26,4 +27,8 @@ final _parseProvider = Provider<ParseDataSource>(
 
 final _googleProvider = Provider<GoogleDataSource>(
   (ref) => GoogleDataSourceImpl(),
+);
+
+final deviceService = Provider<DeviceService>(
+  (ref) => DeviceServiceImpl(),
 );

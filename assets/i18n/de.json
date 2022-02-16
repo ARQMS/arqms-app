@@ -29,13 +29,17 @@
   "setup.wizard.step.info.title": "Informationen",
   "setup.wizard.step.info.desc1": "Bitte lade das Gerät mit einem beliebigen 5V USB-C Adapter. Sobald das Wi-Fi Symbol blau blinkt, weiter zum nächsten Schritt",
   "setup.wizard.step.search.title": "Suchen",
+  "setup.wizard.search.noDevice": "Kein Gerät gefunden",
   "setup.wizard.step.config.title": "Konfigurieren",
   "setup.wizard.step.config.device": "Gerät",
   "setup.wizard.step.config.devicename": "Gerätename",
+  "setup.wizard.step.config.devicename.error": "Kein gültiger Gerätename",
   "setup.wizard.step.config.wlan": "WLAN",
   "setup.wizard.step.config.ssid": "SSID",
   "setup.wizard.step.config.ssidPwd": "Passwort",
   "setup.wizard.step.config.interval": "Sendeinterval [min]",
+  "setup.wizard.step.config.brokeruri": "Broker URL",
+  "setup.wizard.step.config.brokeruri.error": "Broker URL ist nicht gültig",
 
   "widgets.emptyContent.title": "Keine Elemente",
   "widgets.emptyContent.message": "Füge ein neues Element hinzu"

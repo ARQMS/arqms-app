@@ -1,3 +1,4 @@
+import 'package:ARQMS/app/app_instantiation.dart';
 import 'package:ARQMS/app/app_localizations.dart';
 import 'package:ARQMS/app/setup/setup_config_step.dart';
 import 'package:ARQMS/app/setup/setup_info_step.dart';
@@ -6,36 +7,48 @@ import 'package:ARQMS/app/setup/setup_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final wizardViewModel = ChangeNotifierProvider.autoDispose
-    .family<WizardViewModel, int>((ref, length) {
-  return WizardViewModel(length);
+final setupViewModel =
+    ChangeNotifierProvider.autoDispose<SetupViewModel>((ref) {
+  return SetupViewModel(deviceService: ref.read(deviceService));
+});
+
+final _setupErrorStream = StreamProvider<String>((ref) {
+  return ref.read(setupViewModel).errorStream;
 });
 
 class SetupPage extends ConsumerWidget {
-  SetupPage({Key? key}) : super(key: key);
+  const SetupPage({Key? key}) : super(key: key);
 
-  static List<Step> _buildSteps(BuildContext context) => [
+  static List<Step> _buildSteps(
+          BuildContext context, SetupViewModel viewModel) =>
+      [
         Step(
           title: Text("setup.wizard.step.info.title".i18n(context)),
-          state: StepState.disabled,
+          state: viewModel.stepState(0),
           content: const InfoStepContent(),
         ),
         Step(
           title: Text("setup.wizard.step.search.title".i18n(context)),
-          state: StepState.disabled,
+          state: viewModel.stepState(1),
           content: const SearchStepContent(),
         ),
         Step(
           title: Text("setup.wizard.step.config.title".i18n(context)),
-          state: StepState.disabled,
+          state: viewModel.stepState(2),
           content: const ConfigStepContent(),
         ),
       ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final steps = _buildSteps(context);
-    final viewModel = ref.watch(wizardViewModel(steps.length));
+    final viewModel = ref.watch(setupViewModel);
+    ref.listen(_setupErrorStream, (_, data) {
+      final error = data as AsyncData<String>;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.value.i18n(context))));
+    });
+
+    final steps = _buildSteps(context, viewModel);
 
     return Scaffold(
       appBar: AppBar(),
@@ -61,7 +74,7 @@ class SetupPage extends ConsumerWidget {
     );
   }
 
-  Widget _bottomBar(BuildContext context, WizardViewModel viewModel) {
+  Widget _bottomBar(BuildContext context, SetupViewModel viewModel) {
     return Container(
       width: double.infinity,
       height: 50,
@@ -86,7 +99,7 @@ class SetupPage extends ConsumerWidget {
     );
   }
 
-  Widget _pageIndicator(BuildContext context, WizardViewModel viewModel) {
+  Widget _pageIndicator(BuildContext context, SetupViewModel viewModel) {
     return Row(
       children: <Widget>[
         for (int i = 0; i < viewModel.length; i++)

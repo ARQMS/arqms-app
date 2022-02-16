@@ -1,32 +1,35 @@
+import 'dart:async';
+
 import 'package:ARQMS/app/app_navigator.dart';
+import 'package:ARQMS/models/device/device.dart';
+import 'package:ARQMS/services/device_service.dart';
 import 'package:flutter/material.dart';
 
-class WizardViewModel extends ChangeNotifier {
+abstract class WizardViewModelAbs extends ChangeNotifier {
   int _currentStep = 0;
   bool _isCompleted = false;
-  bool nextAvailable = true;
   String _nextTitleId = "setup.wizard.next";
-
-  final int length;
 
   int get currentStep => _currentStep;
   bool get isCompleted => _isCompleted;
   String get nextTitle => _nextTitleId;
 
-  WizardViewModel(this.length);
+  bool nextAvailable = true;
+
+  final StreamController<String> _errorStream = StreamController();
+  Stream<String> get errorStream => _errorStream.stream;
+
+  Map<int, VoidCallback> get __fcnMap;
+  Map<int, StepState> get __stateMap;
+
+  StepState stepState(int index) => __stateMap[index]!;
 
   void onStepTapped(int value) {
-    final Map<int, VoidCallback> _fcnMap = {
-      0: _infoEnter,
-      1: _searchEnter,
-      2: _configEnter,
-    };
-
-    if (value <= _fcnMap.length - 1) {
+    if (value <= __fcnMap.length - 1) {
       _currentStep = value;
-      _fcnMap[value]?.call();
+      __fcnMap[value]?.call();
     } else {
-      _wizardFinish();
+      __wizardFinish();
     }
 
     notifyListeners();
@@ -41,25 +44,103 @@ class WizardViewModel extends ChangeNotifier {
     AppNavigator.pop();
   }
 
-  void _infoEnter() {}
+  void __wizardFinish() {}
+}
 
-  void _searchEnter() async {
-    nextAvailable = false;
-    notifyListeners();
-    // TODO await deviceManager.startBroadcast(const Duration(seconds: 30));
-    await Future.delayed(const Duration(seconds: 2), _searchFinish);
+class SetupViewModel extends WizardViewModelAbs {
+  final GlobalKey<FormState> formKey = GlobalKey();
+
+  static const String defaultBrokerUri = "https://rpi:8443";
+  static const String defaultDeviceName = "My Room";
+
+  final DeviceService _deviceService;
+  late Device _device;
+
+  int get length => __fcnMap.length;
+
+  final TextEditingController deviceName =
+      TextEditingController(text: defaultDeviceName);
+  final TextEditingController brokerUri =
+      TextEditingController(text: defaultBrokerUri);
+  int sendInterval = 15;
+  final TextEditingController ssid = TextEditingController();
+  final TextEditingController ssidPwd = TextEditingController();
+
+  @override
+  late final Map<int, VoidCallback> __fcnMap = {
+    0: _infoEnter,
+    1: _searchEnter,
+    2: _configEnter,
+  };
+
+  @override
+  late final Map<int, StepState> __stateMap = {
+    0: StepState.editing,
+    1: StepState.disabled,
+    2: StepState.disabled,
+  };
+
+  SetupViewModel({required DeviceService deviceService})
+      : _deviceService = deviceService;
+
+  void _infoEnter() {
+    // update state
+    __stateMap[0] = StepState.editing;
+    __stateMap[1] = StepState.disabled;
+    __stateMap[2] = StepState.disabled;
+
+    nextAvailable = true;
   }
 
-  void _searchFinish() {
+  void _searchEnter() async {
+    // update state
+    __stateMap[0] = StepState.disabled;
+    __stateMap[2] = StepState.disabled;
+
+    nextAvailable = false;
+    notifyListeners();
+    final devices = await _deviceService.broadcast(const Duration(seconds: 30));
+    if (devices.isEmpty) {
+      _errorStream.add("setup.wizard.search.noDevice");
+      // back to first page
+      onStepTapped(0);
+      return;
+    } else if (devices.length >= 2) {
+      // TODO multiple devices found, show extra step to select device
+      _device = devices.first;
+    } else {
+      _device = devices.first;
+    }
+
     nextAvailable = true;
     onStepContinue();
   }
 
   void _configEnter() {
+    // update state
+    __stateMap[0] = StepState.complete;
+    __stateMap[1] = StepState.disabled;
+    __stateMap[2] = StepState.editing;
+
     _nextTitleId = "setup.wizard.finish";
   }
 
-  void _wizardFinish() {
+  @override
+  void __wizardFinish() async {
+    var valid = formKey.currentState!.validate();
+    if (!valid) return;
+
+    formKey.currentState!.save();
+
+    await _deviceService.setup(
+      _device,
+      deviceName: deviceName.text,
+      interval: sendInterval,
+      brokerUri: brokerUri.text,
+      ssid: ssid.text,
+      ssidPwd: ssidPwd.text,
+    );
+
     // close
     AppNavigator.pop();
   }
@@ -67,5 +148,6 @@ class WizardViewModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
+    _deviceService.cancelBroadcast();
   }
 }
