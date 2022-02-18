@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 class SignInViewModel with ChangeNotifier {
   final AuthService _authService;
 
-  final TextEditingController username = TextEditingController();
-  final TextEditingController password = TextEditingController();
+  final TextEditingController username =
+      TextEditingController(text: "test@test.ch");
+  final TextEditingController password = TextEditingController(text: "test");
   bool isLoading = false;
   String? lastError;
 

@@ -81,7 +81,10 @@ class ParseDataSourceImpl implements ParseDataSource {
   @override
   Future<User?> signInSilent([GoogleSignInAccount? credentials]) async {
     if (credentials == null) {
-      return await ParseUser.currentUser() as User?;
+      final user = await ParseUser.currentUser() as User?;
+      await user?.login();
+
+      return user;
     }
 
     return signInWithGoogle(credentials);

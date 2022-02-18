@@ -10,12 +10,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 // coverage:ignore-file
 
-final authService = Provider<AuthService>(
-  (ref) => AuthServiceImpl(
-    googleSource: ref.read(_googleProvider),
-    parseSource: ref.read(_parseProvider),
-  )..initialize(),
-);
+final authService = Provider<AuthService>((ref) => AuthServiceImpl(
+          googleSource: ref.read(_googleProvider),
+          parseSource: ref.read(_parseProvider),
+        ) // TODO ..initialize(),
+    );
 
 final roomService = Provider<RoomService>(
   (ref) => RoomServiceImpl(parseSource: ref.read(_parseProvider)),
