@@ -26,11 +26,11 @@
   "setup.wizard.cancel": "Abbrechen",
   "setup.wizard.next": "Weiter",
   "setup.wizard.finish": "Fertig",
-  "setup.wizard.step.info.title": "Informationen",
+  "setup.wizard.step.info.title": "Start",
   "setup.wizard.step.info.desc1": "Bitte lade das Gerät mit einem beliebigen 5V USB-C Adapter. Sobald das Wi-Fi Symbol blau blinkt, weiter zum nächsten Schritt",
   "setup.wizard.step.search.title": "Suchen",
   "setup.wizard.search.noDevice": "Kein Gerät gefunden",
-  "setup.wizard.step.config.title": "Konfigurieren",
+  "setup.wizard.step.config.title": "Einstellungen",
   "setup.wizard.step.config.device": "Gerät",
   "setup.wizard.step.config.devicename": "Gerätename",
   "setup.wizard.step.config.devicename.error": "Kein gültiger Gerätename",
@@ -40,6 +40,7 @@
   "setup.wizard.step.config.interval": "Sendeinterval [min]",
   "setup.wizard.step.config.brokeruri": "Broker URL",
   "setup.wizard.step.config.brokeruri.error": "Broker URL ist nicht gültig",
+  "setup.wizard.step.finish.title": "Registrierung",
 
   "widgets.emptyContent.title": "Keine Elemente",
   "widgets.emptyContent.message": "Füge ein neues Element hinzu"

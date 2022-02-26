@@ -7,9 +7,8 @@ import 'package:flutter/material.dart';
 class SignInViewModel with ChangeNotifier {
   final AuthService _authService;
 
-  final TextEditingController username =
-      TextEditingController(text: "test@test.ch");
-  final TextEditingController password = TextEditingController(text: "test");
+  final username = TextEditingController(text: "test@test.ch");
+  final password = TextEditingController(text: "test");
   bool isLoading = false;
   String? lastError;
 
@@ -56,5 +55,13 @@ class SignInViewModel with ChangeNotifier {
   void _setLoading(bool val) {
     isLoading = val;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    username.dispose();
+    password.dispose();
   }
 }

@@ -26,6 +26,9 @@ abstract class ParseDataSource {
 
   /// Sign out current user
   Future<bool> signOut();
+
+  /// Register a new device to current signed in account
+  Future<bool> registerDevice({required String serialNumber});
 }
 
 class ParseDataSourceImpl implements ParseDataSource {
@@ -98,6 +101,20 @@ class ParseDataSourceImpl implements ParseDataSource {
     if (!response.success) {
       throw DataSourceException.fromParse(response.error!);
     }
+    return true;
+  }
+
+  @override
+  Future<bool> registerDevice({required String serialNumber}) async {
+    var function = ParseCloudFunction("registerDevice");
+    var response = await function.executeObjectFunction(parameters: {
+      "serialnumber": serialNumber,
+    });
+
+    if (!response.success) {
+      throw DataSourceException.fromParse(response.error!);
+    }
+
     return true;
   }
 }

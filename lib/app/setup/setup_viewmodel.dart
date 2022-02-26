@@ -1,9 +1,19 @@
 import 'dart:async';
 
 import 'package:ARQMS/app/app_navigator.dart';
+import 'package:ARQMS/data/exception_datasource.dart';
 import 'package:ARQMS/models/device/device.dart';
 import 'package:ARQMS/services/device_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+typedef BoolCallback = bool Function();
+
+class WizardException implements Exception {
+  final String message;
+
+  WizardException(this.message);
+}
 
 abstract class WizardViewModelAbs extends ChangeNotifier {
   int _currentStep = 0;
@@ -16,35 +26,56 @@ abstract class WizardViewModelAbs extends ChangeNotifier {
 
   bool nextAvailable = true;
 
+  WizardViewModelAbs() {
+    wizardInitialize();
+  }
+
   final StreamController<String> _errorStream = StreamController();
   Stream<String> get errorStream => _errorStream.stream;
 
-  Map<int, VoidCallback> get __fcnMap;
-  Map<int, StepState> get __stateMap;
+  @protected
+  Map<int, AsyncCallback> get _stepFunc;
+  @protected
+  Map<int, StepState> get _stepState;
+  @protected
+  Map<int, BoolCallback> get _stepReady;
 
-  StepState stepState(int index) => __stateMap[index]!;
+  StepState stepState(int index) => _stepState[index]!;
 
-  void onStepTapped(int value) {
-    if (value <= __fcnMap.length - 1) {
+  void wizardGoTo(int value) async {
+    if (value <= _stepFunc.length - 1) {
       _currentStep = value;
-      __fcnMap[value]?.call();
+      notifyListeners();
+
+      try {
+        var callback = _stepFunc[value];
+        await callback?.call();
+      } on WizardException catch (e) {
+        _errorStream.add(e.message);
+        wizardGoTo(0);
+        return;
+      }
     } else {
-      __wizardFinish();
+      wizardFinish();
+    }
+  }
+
+  void wizardContinue() {
+    if (_stepReady[_currentStep]?.call() != true) {
+      return;
     }
 
-    notifyListeners();
+    _isCompleted = _currentStep + 1 >= _stepFunc.length;
+    wizardGoTo(_currentStep + 1);
   }
 
-  void onStepContinue() {
-    _isCompleted = _currentStep + 1 >= 3;
-    onStepTapped(_currentStep + 1);
-  }
+  void wizardCancel() {}
 
-  void onCancel() {
-    AppNavigator.pop();
-  }
+  @protected
+  Future wizardInitialize() async {}
 
-  void __wizardFinish() {}
+  @protected
+  void wizardFinish() {}
 }
 
 class SetupViewModel extends WizardViewModelAbs {
@@ -52,96 +83,134 @@ class SetupViewModel extends WizardViewModelAbs {
 
   static const String defaultBrokerUri = "https://rpi:8443";
   static const String defaultDeviceName = "My Room";
+  static const int defaultInterval = 15;
 
   final DeviceService _deviceService;
-  late Device _device;
 
-  int get length => __fcnMap.length;
+  Device? _device;
 
-  final TextEditingController deviceName =
-      TextEditingController(text: defaultDeviceName);
-  final TextEditingController brokerUri =
-      TextEditingController(text: defaultBrokerUri);
-  int sendInterval = 15;
-  final TextEditingController ssid = TextEditingController();
-  final TextEditingController ssidPwd = TextEditingController();
+  int get length => _stepFunc.length;
+
+  final roomName = TextEditingController(text: defaultDeviceName);
+  final brokerUri = TextEditingController(text: defaultBrokerUri);
+  final ssid = TextEditingController();
+  final ssidPwd = TextEditingController();
+  int sendInterval = defaultInterval;
 
   @override
-  late final Map<int, VoidCallback> __fcnMap = {
-    0: _infoEnter,
-    1: _searchEnter,
-    2: _configEnter,
+  late final Map<int, AsyncCallback> _stepFunc = {
+    0: wizardInitialize,
+    1: _connectDevice,
+    2: _configDevice,
+    3: _registerDevice,
   };
 
   @override
-  late final Map<int, StepState> __stateMap = {
-    0: StepState.editing,
+  late final Map<int, StepState> _stepState = {
+    0: StepState.disabled,
     1: StepState.disabled,
     2: StepState.disabled,
+    3: StepState.disabled,
+  };
+
+  @override
+  late final Map<int, BoolCallback> _stepReady = {
+    0: () => true,
+    1: () => _device != null,
+    2: () => formKey.currentState!.validate(),
+    3: () => true,
   };
 
   SetupViewModel({required DeviceService deviceService})
       : _deviceService = deviceService;
 
-  void _infoEnter() {
-    // update state
-    __stateMap[0] = StepState.editing;
-    __stateMap[1] = StepState.disabled;
-    __stateMap[2] = StepState.disabled;
+  @override
+  Future wizardInitialize() async {
+    _stepState[0] = StepState.editing;
+    _stepState[1] = StepState.disabled;
+    _stepState[2] = StepState.disabled;
+    _stepState[3] = StepState.disabled;
 
     nextAvailable = true;
+    notifyListeners();
   }
 
-  void _searchEnter() async {
-    // update state
-    __stateMap[0] = StepState.disabled;
-    __stateMap[2] = StepState.disabled;
+  Future _connectDevice() async {
+    _stepState[0] = StepState.disabled;
+    _stepState[1] = StepState.editing;
 
-    nextAvailable = false;
-    notifyListeners();
-    final devices = await _deviceService.broadcast(const Duration(seconds: 30));
+    final devices = await _deviceService.broadcast(const Duration(seconds: 10));
+
     if (devices.isEmpty) {
-      _errorStream.add("setup.wizard.search.noDevice");
-      // back to first page
-      onStepTapped(0);
-      return;
-    } else if (devices.length >= 2) {
-      // TODO multiple devices found, show extra step to select device
-      _device = devices.first;
-    } else {
-      _device = devices.first;
+      throw WizardException("setup.wizard.search.noDevice");
     }
 
-    nextAvailable = true;
-    onStepContinue();
+    // select device
+    _device = devices.first;
+    if (devices.length >= 2) {
+      // TODO multiple devices found, show extra step to select device
+    }
+
+    var connected = await _deviceService.connect(_device!);
+    if (!connected) {
+      throw WizardException("setup.wizard.search.noDevice");
+    }
+
+    wizardContinue();
   }
 
-  void _configEnter() {
+  Future _configDevice() async {
     // update state
-    __stateMap[0] = StepState.complete;
-    __stateMap[1] = StepState.disabled;
-    __stateMap[2] = StepState.editing;
+    _stepState[1] = StepState.disabled;
+    _stepState[2] = StepState.editing;
+    _stepState[3] = StepState.disabled;
 
     _nextTitleId = "setup.wizard.finish";
+    nextAvailable = true;
+    notifyListeners();
+  }
+
+  Future _registerDevice() async {
+    _stepState[2] = StepState.disabled;
+    _stepState[3] = StepState.editing;
+    nextAvailable = false;
+    notifyListeners();
+
+    try {
+      var registered = await _deviceService.setup(
+        _device!,
+        roomName: roomName.text,
+        interval: sendInterval,
+        brokerUri: brokerUri.text,
+        ssid: ssid.text,
+        ssidPwd: ssidPwd.text,
+      );
+
+      if (!registered) {
+        throw WizardException("setup.wizard.search.noDevice");
+      }
+    } on DataSourceException catch (e) {
+      // some errors on connection side, so go back and try again
+      if (e.message != null) {
+        _errorStream.add(e.message!);
+      }
+      wizardGoTo(2);
+      return;
+    }
+
+    wizardContinue();
   }
 
   @override
-  void __wizardFinish() async {
-    var valid = formKey.currentState!.validate();
-    if (!valid) return;
+  void wizardFinish() async {
+    AppNavigator.pop();
+  }
 
-    formKey.currentState!.save();
+  @override
+  void wizardCancel() {
+    super.wizardCancel();
+    _deviceService.cancelBroadcast();
 
-    await _deviceService.setup(
-      _device,
-      deviceName: deviceName.text,
-      interval: sendInterval,
-      brokerUri: brokerUri.text,
-      ssid: ssid.text,
-      ssidPwd: ssidPwd.text,
-    );
-
-    // close
     AppNavigator.pop();
   }
 
@@ -149,5 +218,10 @@ class SetupViewModel extends WizardViewModelAbs {
   void dispose() {
     super.dispose();
     _deviceService.cancelBroadcast();
+
+    roomName.dispose();
+    brokerUri.dispose();
+    ssid.dispose();
+    ssidPwd.dispose();
   }
 }

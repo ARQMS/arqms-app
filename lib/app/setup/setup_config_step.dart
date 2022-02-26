@@ -16,15 +16,18 @@ class _ConfigStepContentState extends ConsumerState<ConfigStepContent> {
   @override
   Widget build(BuildContext context) {
     final viewModel = ref.watch(setupViewModel);
-    return Form(
-      key: viewModel.formKey,
-      child: Column(
-        children: [
-          _buildDeviceSection(viewModel),
-          _buildWlanSection(viewModel),
-        ],
+
+    return Stack(children: [
+      Form(
+        key: viewModel.formKey,
+        child: Column(
+          children: [
+            _buildDeviceSection(viewModel),
+            _buildWlanSection(viewModel),
+          ],
+        ),
       ),
-    );
+    ]);
   }
 
   Widget _buildWlanSection(SetupViewModel viewModel) =>
@@ -50,7 +53,7 @@ class _ConfigStepContentState extends ConsumerState<ConfigStepContent> {
           title: "setup.wizard.step.config.device".i18n(context),
           children: [
             TextFormField(
-              controller: viewModel.deviceName,
+              controller: viewModel.roomName,
               validator: (value) {
                 if (value == null) {
                   return "setup.wizard.step.config.devicename.error"

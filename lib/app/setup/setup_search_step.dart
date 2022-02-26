@@ -11,9 +11,9 @@ class _SearchStepContentState extends State<SearchStepContent> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 50,
-      height: 50,
       child: Container(
+        width: 32,
+        height: 32,
         child: CircularProgressIndicator(),
       ),
     );

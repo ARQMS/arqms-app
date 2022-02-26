@@ -37,6 +37,11 @@ class SetupPage extends ConsumerWidget {
           state: viewModel.stepState(2),
           content: const ConfigStepContent(),
         ),
+        Step(
+          title: Text("setup.wizard.step.finish.title".i18n(context)),
+          state: viewModel.stepState(3),
+          content: const SearchStepContent(),
+        ),
       ];
 
   @override
@@ -58,9 +63,9 @@ class SetupPage extends ConsumerWidget {
             steps: steps,
             type: StepperType.horizontal,
             currentStep: viewModel.currentStep,
-            onStepCancel: viewModel.onCancel,
-            onStepContinue: viewModel.onStepContinue,
-            onStepTapped: viewModel.onStepTapped,
+            onStepCancel: viewModel.wizardCancel,
+            onStepContinue: viewModel.wizardContinue,
+            onStepTapped: viewModel.wizardGoTo,
             controlsBuilder: (BuildContext context, ControlsDetails control) {
               return const SizedBox.shrink();
             },
@@ -83,13 +88,13 @@ class SetupPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextButton(
-            onPressed: viewModel.onCancel,
+            onPressed: viewModel.wizardCancel,
             child: Text("setup.wizard.cancel".i18n(context)),
           ),
           _pageIndicator(context, viewModel),
           TextButton(
             onPressed:
-                viewModel.nextAvailable ? viewModel.onStepContinue : null,
+                viewModel.nextAvailable ? viewModel.wizardContinue : null,
             child: Text(
               viewModel.nextTitle.i18n(context),
             ),

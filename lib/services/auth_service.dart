@@ -45,14 +45,15 @@ class AuthServiceImpl extends AuthService {
         _parseSource = parseSource;
 
   Future initialize() async {
-    try {
-      var credentials = await _googleSource.signInSilent();
-      var user = await _parseSource.signInSilent(credentials);
+    // try {
+    //   var credentials = await _googleSource.signInSilent();
+    //   var user = await _parseSource.signInSilent(credentials);
 
-      _authState.add(user);
-    } on Exception catch (e) {
-      _authState.add(null);
-    }
+    //   _authState.add(user);
+    // } on Exception catch (e) {
+    // }
+
+    _authState.add(null);
   }
 
   @override
