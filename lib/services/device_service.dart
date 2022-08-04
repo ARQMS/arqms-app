@@ -153,7 +153,9 @@ class DeviceServiceImpl implements DeviceService {
 
   Future _writeConfigurationString(
       {required String name, String? value}) async {
-    var data = latin1.encoder.convert(value ?? "");
+    var requiredValue = value?.isEmpty ?? true ? "NaN" : value!;
+
+    var data = latin1.encoder.convert("$requiredValue\x00");
     await localCtrlDataSource.setProperty(name, data);
   }
 
