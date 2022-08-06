@@ -1,4 +1,5 @@
 import 'package:ARQMS/data/google_datasource.dart';
+import 'package:ARQMS/data/idf_localctrl_datasource.dart';
 import 'package:ARQMS/data/parse_datasource.dart';
 import 'package:ARQMS/services/auth_service.dart';
 import 'package:ARQMS/services/device_service.dart';
@@ -25,12 +26,16 @@ final _parseProvider = Provider<ParseDataSource>(
   (ref) => ParseDataSourceImpl()..initialize(),
 );
 
+final _localCtrlProvider = Provider<LocalCtrlDataSource>(
+  (ref) => LocalCtrlDataSourceImpl()..initialize(),
+);
+
 final _googleProvider = Provider<GoogleDataSource>(
   (ref) => GoogleDataSourceImpl(),
 );
 
 final deviceService = Provider<DeviceService>(
   (ref) => DeviceServiceImpl(
-    parseDataSource: ref.read(_parseProvider),
-  ),
+      parseDataSource: ref.read(_parseProvider),
+      localCtrlDataSource: ref.read(_localCtrlProvider)),
 );

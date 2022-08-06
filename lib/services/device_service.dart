@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:ARQMS/data/idf_localctrl_datasource.dart';
 import 'package:ARQMS/data/parse_datasource.dart';
 import 'package:ARQMS/models/device/device.dart';
 import 'package:wifi_iot/wifi_iot.dart';
@@ -24,12 +26,19 @@ abstract class DeviceService {
 }
 
 class DeviceServiceImpl implements DeviceService {
+  static const String DEFAULT_DEVICE_PASSWORD = "AirRoom!2022";
+  static const String DEFAULT_DEVICE_PREFIX = "AR-";
+
   final ParseDataSource parseDataSource;
+  final LocalCtrlDataSource localCtrlDataSource;
   String? lastSSID;
   Completer<List<Device>>? deviceSearchCompletion;
   List<Device> devices = [];
 
-  DeviceServiceImpl({required this.parseDataSource});
+  DeviceServiceImpl({
+    required this.parseDataSource,
+    required this.localCtrlDataSource,
+  });
 
   @override
   Future<bool> setup(Device device,
@@ -39,14 +48,15 @@ class DeviceServiceImpl implements DeviceService {
       String? ssid,
       String? ssidPwd}) async {
     // 1) receive device information
-    var serialNumber = await _readConfiguration(device, name: "SerialNumber");
+    await localCtrlDataSource.reloadProperties();
+    var serialNumber = await _readConfigurationString(name: "SerialNumber");
 
     // 2) send configuration to device
-    await _writeConfiguration(device, name: "Room", value: roomName);
-    await _writeConfiguration(device, name: "SSID", value: ssid);
-    await _writeConfiguration(device, name: "SSID_PWD", value: ssidPwd);
-    await _writeConfiguration(device, name: "Interval", value: "$interval");
-    await _writeConfiguration(device, name: "BrokerUri", value: brokerUri);
+    await _writeConfigurationString(name: "Room", value: roomName);
+    await _writeConfigurationString(name: "Wifi_SSID", value: ssid);
+    await _writeConfigurationString(name: "Wifi_PWD", value: ssidPwd);
+    await _writeConfigurationInt(name: "Interval", value: interval);
+    await _writeConfigurationString(name: "BrokerUri", value: brokerUri);
 
     // 3) swap back to previous wlan
     var currentSSID = await WiFiForIoTPlugin.getSSID();
@@ -55,10 +65,10 @@ class DeviceServiceImpl implements DeviceService {
       await WiFiForIoTPlugin.disconnect();
 
       // Just to be sure wifi switched back
-      await Future.delayed(const Duration(seconds: 2));
-      await WiFiForIoTPlugin.connect(lastSSID!);
-      await Future.delayed(const Duration(seconds: 2));
+      await WiFiForIoTPlugin.connect(lastSSID!, withInternet: true);
     }
+
+    await Future.delayed(const Duration(seconds: 5));
 
     // 4) register serialnumber with current logged in account
     return await parseDataSource.registerDevice(
@@ -69,10 +79,6 @@ class DeviceServiceImpl implements DeviceService {
   @override
   Future<List<Device>> broadcast(Duration duration) async {
     devices.clear();
-
-    if (!await _checkPermissions()) {
-      return devices;
-    }
 
     // Ensure wifi is enabled
     if (!await WiFiForIoTPlugin.isEnabled()) {
@@ -85,12 +91,18 @@ class DeviceServiceImpl implements DeviceService {
     }
 
     // start scan and wait for results
-    await WiFiScan.instance.startScan();
+    await WiFiScan.instance.startScan(askPermissions: true);
+
     deviceSearchCompletion = Completer<List<Device>>();
     var wifiStream = WiFiScan.instance.onScannedResultsAvailable.listen(
       (results) {
+        if (results.hasError) {
+          // TODO
+          return;
+        }
+
         devices.addAll(
-          results.where(_isWifiADevice).map((result) => Device(result)),
+          results.value!.where(_isWifiADevice).map((result) => Device(result)),
         );
         if (devices.isNotEmpty) {
           cancelBroadcast();
@@ -128,44 +140,31 @@ class DeviceServiceImpl implements DeviceService {
       device.ssid,
       joinOnce: true,
       bssid: device.bssid,
-      password: "AirRoom!2022",
+      password: DEFAULT_DEVICE_PASSWORD,
     );
   }
 
-  Future<String> _readConfiguration(
-    Device device, {
-    required String name,
-  }) async {
-    // TODO
+  Future<String> _readConfigurationString({required String name}) async {
+    var property = await localCtrlDataSource.getProperty(name);
+    if (property == null) throw Exception("Property $name does not exist");
 
-    var rand = Random();
-    var sn = rand.nextInt(1000000);
-    var sn1 = sn ~/ 1000;
-    var sn2 = sn % 1000;
-    return Future.value("AR-$sn1-$sn2");
+    return latin1.decoder.convert(property.value);
   }
 
-  Future<String> _writeConfiguration(
-    Device device, {
-    required String name,
-    String? value,
-  }) async {
-    // TODO
-    return Future.value(name);
+  Future _writeConfigurationString(
+      {required String name, String? value}) async {
+    var requiredValue = value?.isEmpty ?? true ? "NaN" : value!;
+
+    var data = latin1.encoder.convert("$requiredValue\x00");
+    await localCtrlDataSource.setProperty(name, data);
+  }
+
+  Future _writeConfigurationInt({required String name, int? value}) async {
+    var data = Uint8List(4)..buffer.asInt32List()[0] = value ?? 0;
+    await localCtrlDataSource.setProperty(name, data);
   }
 
   static bool _isWifiADevice(final WiFiAccessPoint wifi) {
-    return wifi.ssid.startsWith("AR-");
-  }
-
-  static Future<bool> _checkPermissions() async {
-    final canScan = await WiFiScan.instance.canStartScan(
-      askPermissions: true,
-    );
-    final canResult = await WiFiScan.instance.canGetScannedResults(
-      askPermissions: true,
-    );
-
-    return canScan == CanStartScan.yes && canResult == CanGetScannedResults.yes;
+    return wifi.ssid.startsWith(DEFAULT_DEVICE_PREFIX);
   }
 }
