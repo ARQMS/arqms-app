@@ -1,6 +1,7 @@
 import 'package:ARQMS/app/auth/auth_signin_page.dart';
 import 'package:ARQMS/app/home/home_page.dart';
 import 'package:ARQMS/app/home/room/room_page.dart';
+import 'package:ARQMS/app/home/roomDetails/room_details_page.dart';
 import 'package:ARQMS/app/setup/setup_page.dart';
 import 'package:ARQMS/styles/route_animations.dart';
 import 'package:ARQMS/widgets/auth_widget.dart';
@@ -75,6 +76,9 @@ class AppNavigator {
         break;
 
       case Paths.roomDetail:
+        var params = settings.arguments as Map<String, String?>;
+        page = RoomDetailsPage(params["roomId"].toString());
+        break;
 
       default:
         if (kDebugMode) {

@@ -3,6 +3,7 @@ import 'package:ARQMS/app/setup/setup_page.dart';
 import 'package:ARQMS/app/setup/setup_viewmodel.dart';
 import 'package:ARQMS/widgets/section_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ConfigStepContent extends ConsumerStatefulWidget {
@@ -53,6 +54,14 @@ class _ConfigStepContentState extends ConsumerState<ConfigStepContent> {
           title: "setup.wizard.step.config.device".i18n(context),
           children: [
             TextFormField(
+              controller: viewModel.sn,
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText:
+                    "setup.wizard.step.config.serialnumber".i18n(context),
+              ),
+            ),
+            TextFormField(
               controller: viewModel.roomName,
               validator: (value) {
                 if (value == null) {
@@ -64,27 +73,18 @@ class _ConfigStepContentState extends ConsumerState<ConfigStepContent> {
                 labelText: "setup.wizard.step.config.devicename".i18n(context),
               ),
             ),
-            DropdownButtonFormField(
+            TextFormField(
+              controller: viewModel.sendInterval,
               decoration: InputDecoration(
                 labelText: "setup.wizard.step.config.interval".i18n(context),
               ),
-              onChanged: (int? value) {
-                viewModel.sendInterval = value ?? viewModel.sendInterval;
-              },
-              value: viewModel.sendInterval,
-              items: const [
-                DropdownMenuItem<int>(child: Text("5"), value: 5),
-                DropdownMenuItem<int>(child: Text("10"), value: 10),
-                DropdownMenuItem<int>(child: Text("15"), value: 15),
-                DropdownMenuItem<int>(child: Text("30"), value: 30),
-                DropdownMenuItem<int>(child: Text("60"), value: 60),
-                DropdownMenuItem<int>(child: Text("120"), value: 120),
-              ],
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             ),
             TextFormField(
               controller: viewModel.brokerUri,
               validator: (value) {
-                if (value == null || !Uri.parse(value).isAbsolute) {
+                if (value == null || value.length < 5) {
                   return "setup.wizard.step.config.brokeruri.error"
                       .i18n(context);
                 }

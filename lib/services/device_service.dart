@@ -21,6 +21,9 @@ abstract class DeviceService {
   });
 
   Future<bool> connect(Device device);
+  Future<String> readConfigurationString({required String name});
+  Future<int> readConfigurationInt({required String name});
+  Future reload();
 
   void cancelBroadcast();
 }
@@ -49,14 +52,13 @@ class DeviceServiceImpl implements DeviceService {
       String? ssidPwd}) async {
     // 1) receive device information
     await localCtrlDataSource.reloadProperties();
-    var serialNumber = await _readConfigurationString(name: "SerialNumber");
+    var serialNumber = await readConfigurationString(name: "SerialNumber");
 
     // 2) send configuration to device
-    await _writeConfigurationString(name: "Room", value: roomName);
+    await _writeConfigurationString(name: "BrokerUri", value: brokerUri);
+    await _writeConfigurationInt(name: "Interval", value: interval);
     await _writeConfigurationString(name: "Wifi_SSID", value: ssid);
     await _writeConfigurationString(name: "Wifi_PWD", value: ssidPwd);
-    await _writeConfigurationInt(name: "Interval", value: interval);
-    await _writeConfigurationString(name: "BrokerUri", value: brokerUri);
 
     // 3) swap back to previous wlan
     var currentSSID = await WiFiForIoTPlugin.getSSID();
@@ -134,6 +136,8 @@ class DeviceServiceImpl implements DeviceService {
     }
   }
 
+  // TODO https://stackoverflow.com/questions/39311853/android-force-network-requests-go-through-wifi-instead-of-mobile-network
+  // Android sends data via mobile network, whenever wifi has no internet connection, so we must ensure data is transfered over wifi
   @override
   Future<bool> connect(Device device) async {
     return await WiFiForIoTPlugin.findAndConnect(
@@ -144,18 +148,20 @@ class DeviceServiceImpl implements DeviceService {
     );
   }
 
-  Future<String> _readConfigurationString({required String name}) async {
+  @override
+  Future<String> readConfigurationString({required String name}) async {
     var property = await localCtrlDataSource.getProperty(name);
     if (property == null) throw Exception("Property $name does not exist");
 
-    return latin1.decoder.convert(property.value);
+    return trim(latin1.decoder.convert(property.value));
   }
 
+  // TODO check MAX_LENGTH according to firmware. (incl error in UI)
   Future _writeConfigurationString(
       {required String name, String? value}) async {
-    var requiredValue = value?.isEmpty ?? true ? "NaN" : value!;
-
+    var requiredValue = value?.isEmpty ?? true ? "" : value!;
     var data = latin1.encoder.convert("$requiredValue\x00");
+
     await localCtrlDataSource.setProperty(name, data);
   }
 
@@ -164,7 +170,26 @@ class DeviceServiceImpl implements DeviceService {
     await localCtrlDataSource.setProperty(name, data);
   }
 
+  @override
+  Future<int> readConfigurationInt({required String name}) async {
+    var property = await localCtrlDataSource.getProperty(name);
+    if (property == null) throw Exception("Property $name does not exist");
+
+    final byteList = ByteData.view(property.value.buffer);
+    return byteList.getUint32(0, Endian.little);
+  }
+
   static bool _isWifiADevice(final WiFiAccessPoint wifi) {
     return wifi.ssid.startsWith(DEFAULT_DEVICE_PREFIX);
+  }
+
+  @override
+  Future reload() async {
+    await localCtrlDataSource.reloadProperties();
+  }
+
+  String trim(String from) {
+    var stringEnd = from.codeUnits.indexOf(0);
+    return from.substring(0, stringEnd);
   }
 }

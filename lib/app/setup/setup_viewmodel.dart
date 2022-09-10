@@ -83,7 +83,7 @@ class SetupViewModel extends WizardViewModelAbs {
 
   static const String defaultBrokerUri = "https://rpi:8443";
   static const String defaultDeviceName = "My Room";
-  static const int defaultInterval = 15;
+  static const int defaultInterval = 30;
 
   final DeviceService _deviceService;
 
@@ -91,11 +91,12 @@ class SetupViewModel extends WizardViewModelAbs {
 
   int get length => _stepFunc.length;
 
+  final sn = TextEditingController();
   final roomName = TextEditingController(text: defaultDeviceName);
   final brokerUri = TextEditingController(text: defaultBrokerUri);
   final ssid = TextEditingController();
   final ssidPwd = TextEditingController();
-  int sendInterval = defaultInterval;
+  final sendInterval = TextEditingController();
 
   @override
   late final Map<int, AsyncCallback> _stepFunc = {
@@ -156,6 +157,28 @@ class SetupViewModel extends WizardViewModelAbs {
       throw WizardException("setup.wizard.search.noDevice");
     }
 
+    await _deviceService.reload();
+
+    sn.text = await _deviceService.readConfigurationString(
+      name: "SerialNumber",
+    );
+    brokerUri.text = await _deviceService.readConfigurationString(
+      name: "BrokerUri",
+    );
+    sendInterval.text = (await _deviceService.readConfigurationInt(
+      name: "Interval",
+    ))
+        .toString();
+    roomName.text = await _deviceService.readConfigurationString(
+      name: "Room",
+    );
+    ssid.text = await _deviceService.readConfigurationString(
+      name: "Wifi_SSID",
+    );
+    ssidPwd.text = await _deviceService.readConfigurationString(
+      name: "Wifi_PWD",
+    );
+
     wizardContinue();
   }
 
@@ -180,7 +203,7 @@ class SetupViewModel extends WizardViewModelAbs {
       var registered = await _deviceService.setup(
         _device!,
         roomName: roomName.text,
-        interval: sendInterval,
+        interval: int.parse(sendInterval.text),
         brokerUri: brokerUri.text,
         ssid: ssid.text,
         ssidPwd: ssidPwd.text,
@@ -189,6 +212,8 @@ class SetupViewModel extends WizardViewModelAbs {
       if (!registered) {
         throw WizardException("setup.wizard.search.noDevice");
       }
+
+      // TODO create new room on parse server for registered device
     } on DataSourceException catch (e) {
       // some errors on connection side, so go back and try again
       if (e.message != null) {

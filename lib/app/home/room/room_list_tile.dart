@@ -60,17 +60,17 @@ class RoomListTile extends StatelessWidget {
             _buildSensorValue(
               icon: Icons.thermostat,
               titleId: "room.sensor.temp.title",
-              value: "${room.temperature?.toStringAsFixed(1)} °C",
+              value: "${room.temperature.toStringAsFixed(1)} °C",
             ),
             _buildSensorValue(
               icon: Icons.opacity,
               titleId: "room.sensor.humidity.title",
-              value: "${room.relativeHumidity?.toStringAsFixed(1)} % rH",
+              value: "${room.relativeHumidity.toStringAsFixed(1)} % rH",
             ),
             _buildSensorValue(
               icon: Icons.cloud,
               titleId: "room.sensor.co2.title",
-              value: "${room.co2?.toStringAsFixed(1)} %",
+              value: "${room.co2.toStringAsFixed(1)} %",
             ),
           ],
         ),

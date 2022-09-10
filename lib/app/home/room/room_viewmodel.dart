@@ -14,7 +14,9 @@ class RoomViewModel with ChangeNotifier {
 
   Future delete(Room room) async {}
 
-  void gotoDetails(Room room) {}
+  void gotoDetails(Room room) async {
+    await AppNavigator.push(Routes.roomDetail, {"roomId": room.objectId});
+  }
 
   void addRoom() async {
     await AppNavigator.push(Routes.deviceSetup);

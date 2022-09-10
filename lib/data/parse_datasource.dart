@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ARQMS/data/exception_datasource.dart';
 import 'package:ARQMS/models/auth/user.dart';
 import 'package:ARQMS/models/room/room.dart';
+import 'package:ARQMS/models/room/room_history.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
@@ -29,6 +30,12 @@ abstract class ParseDataSource {
 
   /// Register a new device to current signed in account
   Future<bool> registerDevice({required String serialNumber});
+
+  Future<List<RoomHistory>> getRoomHistory(
+    String roomId, {
+    required DateTime start,
+    required DateTime end,
+  });
 }
 
 class ParseDataSourceImpl implements ParseDataSource {
@@ -102,6 +109,25 @@ class ParseDataSourceImpl implements ParseDataSource {
       throw DataSourceException.fromParse(response.error!);
     }
     return true;
+  }
+
+  @override
+  Future<List<RoomHistory>> getRoomHistory(String roomId,
+      {required DateTime start, required DateTime end}) async {
+    var roomQuery = QueryBuilder(Room())..whereEqualTo("objectId", roomId);
+
+    var roomHistoryQuery = QueryBuilder(RoomHistory())
+      ..setLimit(100000)
+      ..whereGreaterThan(RoomHistory.keyDate, start.toUtc())
+      ..whereLessThan(RoomHistory.keyDate, end.toUtc())
+      ..whereMatchesQuery(RoomHistory.keyRoom, roomQuery);
+
+    final ParseResponse response = await roomHistoryQuery.query();
+
+    if (!response.success) {
+      throw DataSourceException.fromParse(response.error!);
+    }
+    return response.results?.cast<RoomHistory>() ?? [];
   }
 
   @override

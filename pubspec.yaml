@@ -28,6 +28,7 @@ dependencies:
   hooks_riverpod: ^1.0.3
   jdenticon_dart: 2.0.0
   flutter_svg: ^1.0.3
+  syncfusion_flutter_charts: ^20.2.48
 
   # Services
   mqtt5_client: ^3.1.3

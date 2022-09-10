@@ -23,6 +23,8 @@
   "room.sensor.co2.title": "CO2",
   "room.sensor.humidity.title": "Rel. Luftfeuchtigkeit",
 
+  "roomDetails.title": "Detail",
+
   "setup.wizard.cancel": "Abbrechen",
   "setup.wizard.next": "Weiter",
   "setup.wizard.finish": "Fertig",
@@ -32,6 +34,7 @@
   "setup.wizard.search.noDevice": "Kein Gerät gefunden",
   "setup.wizard.step.config.title": "Einstellungen",
   "setup.wizard.step.config.device": "Gerät",
+  "setup.wizard.step.config.serialnumber": "Seriennummer",
   "setup.wizard.step.config.devicename": "Gerätename",
   "setup.wizard.step.config.devicename.error": "Kein gültiger Gerätename",
   "setup.wizard.step.config.wlan": "WLAN",
